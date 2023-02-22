@@ -7,7 +7,7 @@ const schema = new Schema(
         address: { type: String, maxLength: 255, required: true },
         bedrooms: Number,
         bathrooms: Number,
-        lendsize: String,
+        landsize: String,
         carpark: Number,
         location: {
             type: {
