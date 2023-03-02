@@ -133,7 +133,7 @@ export const read = async (req, res) => {
             action: ad.action,
             type: ad.type,
             address: {
-                $regex: ad.googleMap[0].city,
+                $regex: ad.googleMap[0]?.administrativeLevels?.level2long || "",
                 $options: "i",
             },
         })
@@ -143,6 +143,37 @@ export const read = async (req, res) => {
             );
 
         res.json({ ad, related });
+    } catch (err) {
+        console.log(err);
+    }
+};
+
+export const adToWishlist = async (req, res) => {
+    try {
+        const user = await User.findByIdAndUpdate(
+            req.user._id,
+            {
+                $addToSet: { wishlist: req.body.adId },
+            },
+            { new: true }
+        );
+        const { password, resetCode, ...rest } = user._doc;
+        res.json(rest);
+    } catch (err) {
+        console.log(err);
+    }
+};
+export const removeFromWishlist = async (req, res) => {
+    try {
+        const user = await User.findByIdAndUpdate(
+            req.user._id,
+            {
+                $pull: { wishlist: req.params.adId },
+            },
+            { new: true }
+        );
+        const { password, resetCode, ...rest } = user._doc;
+        res.json(rest);
     } catch (err) {
         console.log(err);
     }
