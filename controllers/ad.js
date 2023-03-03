@@ -3,6 +3,7 @@ import { nanoid } from "nanoid";
 import slugify from "slugify";
 import Ad from "../models/ad.js";
 import User from "../models/user.js";
+import { emailTemplate } from "../helpers/email.js";
 
 export const uploadImage = async (req, res) => {
     try {
@@ -174,6 +175,52 @@ export const removeFromWishlist = async (req, res) => {
         );
         const { password, resetCode, ...rest } = user._doc;
         res.json(rest);
+    } catch (err) {
+        console.log(err);
+    }
+};
+
+export const contactSeller = async (req, res) => {
+    try {
+        const { name, email, message, phone, adId } = req.body;
+        const ad = await Ad.findById(adId).populate("postedBy", "email");
+        const user = await User.findByIdAndUpdate(req.user._id, {
+            $addToSet: { enquiredProperties: adId },
+        });
+
+        if (!user) {
+            return res.json({ error: "Could not find user with that email" });
+        } else {
+            // send email
+            config.AWSSES.sendEmail(
+                emailTemplate(
+                    ad.postedBy.email,
+                    `
+                    <p>You have received a new customer enquiry</p>
+
+                    <h4>Customer details</h4>
+                    <p>Name: ${name}</p>
+                    <p>Email: ${email}</p>
+                    <p>Phone: ${phone}</p>
+                    <p>Message: ${message}</p>
+
+                    <a href="${config.CLIENT_URL}/ad/${ad.slug}">
+                    ${ad.type} in  ${ad.address} for  ${ad.action} $ ${ad.price}</a>
+                `,
+                    email,
+                    "New enquiry received"
+                ),
+                (err, data) => {
+                    if (err) {
+                        console.log(err);
+                        return res.json({ ok: false });
+                    } else {
+                        console.log(data);
+                        return res.json({ ok: true });
+                    }
+                }
+            );
+        }
     } catch (err) {
         console.log(err);
     }

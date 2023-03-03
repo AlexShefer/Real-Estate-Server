@@ -114,7 +114,13 @@ export const register = async (req, res) => {
 export const login = async (req, res) => {
     try {
         const { email, password } = req.body;
+        // find user by email
         const user = await User.findOne({ email });
+        if (!user) {
+            return res.json({ error: "No user found. Please register." });
+        }
+
+        // compare password
         const match = await comparePassword(password, user.password);
         if (!match) {
             return res.json({ error: "Wrong password" });
