@@ -149,7 +149,7 @@ export const read = async (req, res) => {
     }
 };
 
-export const adToWishlist = async (req, res) => {
+export const addToWishlist = async (req, res) => {
     try {
         const user = await User.findByIdAndUpdate(
             req.user._id,
@@ -282,6 +282,44 @@ export const update = async (req, res) => {
             });
             res.json({ ok: true });
         }
+    } catch (err) {
+        console.log(err);
+    }
+};
+export const remove = async (req, res) => {
+    try {
+        const ad = await Ad.findById(req.params._id);
+        const owner = req.user._id == ad?.postedBy;
+
+        if (!owner) {
+            return res.json({ error: "Permission denied" });
+        } else {
+            await Ad.findByIdAndRemove(ad._id);
+            res.json({ ok: true });
+        }
+    } catch (err) {
+        console.log(err);
+    }
+};
+
+export const enquiredProperties = async (req, res) => {
+    try {
+        const user = await User.findById(req.user._id);
+        const ads = await Ad.find({ _id: user.enquiredProperties }).sort({
+            createdAt: -1,
+        });
+        res.json(ads);
+    } catch (err) {
+        console.log(err);
+    }
+};
+export const wishlist = async (req, res) => {
+    try {
+        const user = await User.findById(req.user._id);
+        const ads = await Ad.find({ _id: user.wishlist }).sort({
+            createdAt: -1,
+        });
+        res.json(ads);
     } catch (err) {
         console.log(err);
     }
