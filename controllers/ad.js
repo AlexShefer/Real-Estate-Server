@@ -98,8 +98,6 @@ export const create = async (req, res) => {
         user.resetCode = undefined;
 
         res.json({ ad, user });
-
-        // todo: make user role > Seller
     } catch (err) {
         res.json({ error: "Something went wrong. Try again." });
         console.log(err);
@@ -319,6 +317,29 @@ export const wishlist = async (req, res) => {
         const ads = await Ad.find({ _id: user.wishlist }).sort({
             createdAt: -1,
         });
+        res.json(ads);
+    } catch (err) {
+        console.log(err);
+    }
+};
+export const adsForSell = async (req, res) => {
+    try {
+        const ads = await Ad.find({ action: "Sell" })
+            .select("-googleMap -location -photos.Key -photos.key -photos.ETag")
+            .sort({ createdAt: -1 })
+            .limit(24);
+
+        res.json(ads);
+    } catch (err) {
+        console.log(err);
+    }
+};
+export const adsForRent = async (req, res) => {
+    try {
+        const ads = await Ad.find({ action: "Rent" })
+            .select("-googleMap -location -photos.Key -photos.key -photos.ETag")
+            .sort({ createdAt: -1 })
+            .limit(24);
         res.json(ads);
     } catch (err) {
         console.log(err);
